@@ -21,8 +21,17 @@ export class AmazonCom implements CrawlerInterface {
     'https://amzn.to/2He0YYH',
     'https://amzn.to/33UDAqO',
     // Playstation 5
-    'https://amzn.to/2ZXt3dk',
-    'https://amzn.to/3kBhBMv'
+    // 'https://amzn.to/2ZXt3dk',
+    // 'https://amzn.to/3kBhBMv'
+    // RTX 3090
+    'https://amzn.to/2EuQof5',
+    'https://amzn.to/3cDFSPn',
+    'https://amzn.to/3kKOMgB',
+    'https://amzn.to/3j1yW0v',
+    'https://amzn.to/2S83WAt',
+    'https://amzn.to/3j31N4S',
+    'https://amzn.to/3csVyF1',
+    'https://amzn.to/3cp4kDS',
   ];
 
   getRetailerName(): string {
@@ -35,7 +44,7 @@ export class AmazonCom implements CrawlerInterface {
       try {
         const response = await axios.get(url, {
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36\'',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
           }
         });
         const $        = cheerio.load(response.data);
