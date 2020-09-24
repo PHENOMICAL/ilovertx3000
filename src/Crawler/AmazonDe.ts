@@ -20,8 +20,8 @@ export class AmazonDe implements CrawlerInterface {
     'https://amzn.to/32QmUla',
     'https://amzn.to/2FWjWCK',
     // Playstation 5
-    'https://amzn.to/345FxkD',
-    'https://amzn.to/3mLhEHx'
+    // 'https://amzn.to/345FxkD',
+    // 'https://amzn.to/3mLhEHx'
   ];
 
   getRetailerName(): string {
@@ -34,7 +34,7 @@ export class AmazonDe implements CrawlerInterface {
       try {
         const response = await axios.get(url, {
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36\'',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
           }
         });
         const $        = cheerio.load(response.data);
@@ -47,6 +47,7 @@ export class AmazonDe implements CrawlerInterface {
           name,
           url,
           stock,
+          retailer: this.getRetailerName(),
           affiliate: true
         });
         logger.debug(`Acquired stock from ${this.getRetailerName()}`, products[products.length - 1]);
