@@ -1,69 +1,79 @@
-import {CrawlerInterface} from './CrawlerInterface';
-import cheerio from 'cheerio';
-import axios from 'axios';
-import {Product} from '../Model/Product';
 import {Logger} from '../Logger';
+import {Region} from '../Model/Region';
+import {Crawler} from './Crawler';
+import {Product} from '../Model/Product';
 
-export class AmazonCom implements CrawlerInterface {
-  private readonly urls = [
-    'https://amzn.to/3iSqIrK',
-    'https://amzn.to/32PmV8W',
-    'https://amzn.to/3mFsU8a',
-    'https://amzn.to/2RVxlNP',
-    'https://amzn.to/3mLMn75',
-    'https://amzn.to/3hT288N',
-    'https://amzn.to/3mGxQJX',
-    'https://amzn.to/3kFZ1CY',
-    'https://amzn.to/2ROJgx1',
-    'https://amzn.to/2HrvSgB',
-    'https://amzn.to/3ckC3ON',
-    'https://amzn.to/32QiAlM',
-    'https://amzn.to/2He0YYH',
-    'https://amzn.to/33UDAqO',
-    // Playstation 5
-    // 'https://amzn.to/2ZXt3dk',
-    // 'https://amzn.to/3kBhBMv'
-    // RTX 3090
-    'https://amzn.to/2EuQof5',
-    'https://amzn.to/3cDFSPn',
-    'https://amzn.to/3kKOMgB',
-    'https://amzn.to/3j1yW0v',
-    'https://amzn.to/2S83WAt',
-    'https://amzn.to/3j31N4S',
-    'https://amzn.to/3csVyF1',
-    'https://amzn.to/3cp4kDS',
-  ];
-
+export class AmazonCom extends Crawler {
   getRetailerName(): string {
     return 'amazon.com';
   }
 
+  getRegion(): Region {
+    return Region.US;
+  }
+
+  protected getUrls(): string[] {
+    return [
+      // PNY GeForce RTX 3080 10GB XLR8
+      'https://amzn.to/3iSqIrK',
+      // ZOTAC Gaming GeForce RTX 3080 Trinity 10GB
+      'https://amzn.to/32PmV8W',
+      // PNY GeForce RTX 3080 10GB XLR8
+      'https://amzn.to/3mFsU8a',
+      // MSI Gaming GeForce RTX 3080
+      'https://amzn.to/2RVxlNP',
+      // EVGA 10G-P5-3897-KR GeForce RTX 3080 FTW3 ULTRA GAMING
+      'https://amzn.to/3mLMn75',
+      // EVGA 10G-P5-3895-KR GeForce RTX 3080 FTW3 GAMING
+      'https://amzn.to/3hT288N',
+      // EVGA 10G-P5-3885-KR GeForce RTX 3080 XC3 ULTRA GAMING
+      'https://amzn.to/3mGxQJX',
+      // EVGA 10G-P5-3883-KR GeForce RTX 3080 XC3 GAMING
+      'https://amzn.to/3kFZ1CY',
+      // EVGA 10G-P5-3881-KR GeForce RTX 3080 XC3 BLACK GAMING
+      'https://amzn.to/2ROJgx1',
+      // GIGABYTE GeForce RTX 3080 Gaming OC
+      'https://amzn.to/2HrvSgB',
+      // GIGABYTE GeForce RTX 3080 Eagle OC
+      'https://amzn.to/3ckC3ON',
+      // ASUS TUF Gaming NVIDIA GeForce RTX 3080 OC
+      'https://amzn.to/32QiAlM',
+      // ASUS TUF Gaming NVIDIA GeForce RTX 3080
+      'https://amzn.to/2He0YYH',
+      // MSI Gaming GeForce RTX 3080
+      'https://amzn.to/33UDAqO',
+      // ==========================
+      // PNY GeForce RTX 3090
+      'https://amzn.to/2EuQof5',
+      // PNY GeForce RTX 3090
+      'https://amzn.to/3cDFSPn',
+      // MSI Gaming GeForce RTX 3090
+      'https://amzn.to/3kKOMgB',
+      // MSI Gaming GeForce RTX 3090
+      'https://amzn.to/3j1yW0v',
+      // GIGABYTE GeForce RTX 3090
+      'https://amzn.to/2S83WAt',
+      // GIGABYTE GeForce RTX 3090
+      'https://amzn.to/3j31N4S',
+      // ASUS TUF Gaming NVIDIA GeForce RTX 3090
+      'https://amzn.to/3csVyF1',
+      // ASUS TUF Gaming NVIDIA GeForce RTX 3090
+      'https://amzn.to/3cp4kDS',
+    ];
+  }
+
+  protected productIsValid(product: Product): boolean {
+    return super.productIsValid(product) && !product.stock?.startsWith('Available from');
+  }
+
   async acquireStock(logger: Logger) {
-    const products: Product[] = [];
-    for await (const url of this.urls) {
-      try {
-        const response = await axios.get(url, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
-          }
-        });
-        const $        = cheerio.load(response.data);
-        const name     = $('#productTitle').first().text().trim();
-        const stock    = $('#availability span').first().text().trim();
-        if (name === '') {
-          continue;
-        }
-        products.push({
-          name,
-          url,
-          stock,
-          affiliate: true
-        });
-        logger.debug(`Acquired stock from ${this.getRetailerName()}`, products[products.length - 1]);
-      } catch (e) {
-        logger.error(e.message, {url});
-      }
-    }
-    return products;
+    return await this.crawlSinglePage(
+      $ => ({
+        name: $('#productTitle').first().text().trim(),
+        stock: $('#availability span').first().text().trim(),
+      }),
+      true,
+      logger
+    );
   }
 }

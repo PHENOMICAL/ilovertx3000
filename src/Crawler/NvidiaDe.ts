@@ -1,38 +1,28 @@
-import {CrawlerInterface} from './CrawlerInterface';
-import cheerio from 'cheerio';
-import {Product} from '../Model/Product';
 import {Logger} from '../Logger';
-import axios from 'axios';
+import {Region} from '../Model/Region';
+import {Nvidia} from './Nvidia';
 
-export class NvidiaDe implements CrawlerInterface {
-  private products: Product[] = [
-    {
-      name: 'nVidia GeForce RTX 3080 FE',
-      url: 'https://www.nvidia.com/de-de/geforce/graphics-cards/30-series/rtx-3080/'
-    },
-  ];
+export class NvidiaDe extends Nvidia {
+  getRegion(): Region {
+    return Region.DE;
+  }
 
-  getRetailerName(): string {
-    return 'nVidia Shop DE';
+  protected getApiUrls(): Array<{ api: string; productUrl: string }> {
+    return [
+      // NVIDIA GEFORCE RTX 3080,
+      {
+        api: 'https://api-prod.nvidia.com/direct-sales-shop/DR/products/de_de/EUR/5438792300',
+        productUrl: 'https://www.nvidia.com/de-de/geforce/graphics-cards/30-series/rtx-3080/'
+      },
+      // NVIDIA GEFORCE RTX 3090
+      {
+        api: 'https://api-prod.nvidia.com/direct-sales-shop/DR/products/de_de/EUR/5438761400',
+        productUrl: 'https://www.nvidia.com/de-de/geforce/graphics-cards/30-series/rtx-3090/'
+      }
+    ];
   }
 
   async acquireStock(logger: Logger) {
-    const products: Product[] = [];
-    for await (const product of this.products) {
-      try {
-        const response = await axios.get(product.url);
-        if (response.status !== 200) {
-          continue;
-        }
-        const $          = cheerio.load(response.data);
-        product.retailer = this.getRetailerName();
-        product.stock    = $('.cta-button').first().text().trim();
-        logger.debug(`Acquired stock from ${this.getRetailerName()}`, product);
-        products.push(product);
-      } catch (e) {
-        logger.error(e.message, { url: product.url });
-      }
-    }
-    return products;
+    return await super.acquireStock(logger);
   }
 }
