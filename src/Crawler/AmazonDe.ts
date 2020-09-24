@@ -35,7 +35,7 @@ export class AmazonDe extends Crawler {
       // MSI RTX 3080 Gaming X Trio 10G
       'https://amzn.to/35XGgGN',
       // PNY GeForce RTX™ 3080 10GB XLR8 Gaming Epic-X
-      'https://amzn.to/35Yfbn6',
+      // 'https://amzn.to/35Yfbn6', TODO
       // MSI RTX 3080 Ventus 3X 10G OC
       'https://amzn.to/32QmUla',
       // ASUS TUF GeForce RTX 3080 10 GB OC
