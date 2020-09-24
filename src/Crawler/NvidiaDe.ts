@@ -26,7 +26,7 @@ export class NvidiaDe implements CrawlerInterface {
         }
         const $          = cheerio.load(response.data);
         product.retailer = this.getRetailerName();
-        product.stock    = $('.oos-btn').first().text().trim();
+        product.stock    = $('.cta-button').first().text().trim();
         logger.debug(`Acquired stock from ${this.getRetailerName()}`, product);
         products.push(product);
       } catch (e) {
