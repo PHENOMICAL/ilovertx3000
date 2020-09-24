@@ -17,6 +17,9 @@ try to give anyone an unfair advantage and just wants to help in equalizing chan
 - alternate.de
 - EVGA Shop
 - nVidia DE Shop
+- nVidia US Shop
+- Amazon.de
+- Amazon.com
 
 ### Why?
 
