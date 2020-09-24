@@ -6,7 +6,8 @@ import {Logger} from '../Logger';
 
 export class AlternateDe implements CrawlerInterface {
   private readonly urls = [
-    'https://www.alternate.de/Grafikkarten/RTX-3080'
+    'https://www.alternate.de/Grafikkarten/RTX-3080',
+    'https://www.alternate.de/Grafikkarten/RTX-3090'
   ];
 
   getRetailerName(): string {
