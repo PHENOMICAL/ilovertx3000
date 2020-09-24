@@ -26,6 +26,7 @@ export class Evga implements CrawlerInterface {
         products.push({
           name,
           url: `https://www.evga.com${url}`,
+          retailer: this.getRetailerName(),
           stock
         });
         logger.debug(`Acquired stock from ${this.getRetailerName()}`, products[products.length - 1]);
