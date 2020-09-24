@@ -30,6 +30,7 @@ export class Caseking implements CrawlerInterface {
           products.push({
             name,
             url,
+            retailer: this.getRetailerName(),
             stock
           });
           logger.debug(`Acquired stock from ${this.getRetailerName()}`, products[products.length - 1]);
