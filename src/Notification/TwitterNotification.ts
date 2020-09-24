@@ -18,7 +18,7 @@ export class TwitterNotification implements NotificationInterface {
     logger.debug('Notifying via twitter', {message});
     this.client.post('statuses/update', { status: message }, err => {
       if (err) {
-        logger.error(`Failed to notify: ${err.message}`);
+        logger.error(`Twitter Notification failed`, {err});
       }
     });
   }
