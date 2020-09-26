@@ -2,8 +2,13 @@ import {Product} from '../Model/Product';
 import {Logger} from '../Logger';
 import {Crawler} from './Crawler';
 import {Region} from '../Model/Region';
+import {Configuration} from '../Model/Configuration';
 
 export class Caseking extends Crawler {
+  constructor(private urls: string[]) {
+    super();
+  }
+
   getRetailerName(): string {
     return 'Caseking';
   }
@@ -13,17 +18,14 @@ export class Caseking extends Crawler {
   }
 
   protected getUrls(): string[] {
-    return [
-      'https://www.caseking.de/pc-komponenten/grafikkarten/nvidia/geforce-rtx-3080',
-      'https://www.caseking.de/pc-komponenten/grafikkarten/nvidia/geforce-rtx-3090'
-    ];
+    return this.urls;
   }
 
   protected productIsValid(product: Product): boolean {
     return super.productIsValid(product) && product.stock !== 'individuell';
   }
 
-  async acquireStock(logger: Logger) {
+  async acquireStock(config: Configuration, logger: Logger) {
     return await this.crawlList(
       '.ck_listing .artbox',
       ($, element) => ({
@@ -32,6 +34,7 @@ export class Caseking extends Crawler {
         url: $(element).find('a.hover_bg').attr('href') as string
       }),
       false,
+      config,
       logger
     );
   }

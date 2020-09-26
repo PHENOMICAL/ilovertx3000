@@ -4,6 +4,9 @@ import {Logger} from '../Logger';
 import {Product} from '../Model/Product';
 import axios from 'axios';
 import cheerio from 'cheerio';
+import {CrawlerStats} from '../Model/CrawlerStats';
+import {HttpStatus} from '../Model/HttpStatus';
+import {Configuration} from '../Model/Configuration';
 
 export abstract class Crawler implements CrawlerInterface {
   protected headers = [
@@ -53,12 +56,19 @@ export abstract class Crawler implements CrawlerInterface {
       "Accept-Language": "en-US,en;q=0.9"
     }
   ];
+  protected stats: CrawlerStats = {
+    latestCycleRequests: [],
+  }
 
   getRegion(): Region {
     return Region.Unknown;
   }
 
-  abstract acquireStock(logger: Logger): Promise<Product[]>;
+  getStats() {
+    return this.stats;
+  }
+
+  abstract acquireStock(configuration: Configuration, logger: Logger): Promise<Product[]>;
 
   abstract getRetailerName(): string;
 
@@ -70,11 +80,12 @@ export abstract class Crawler implements CrawlerInterface {
     return product.name !== '' && product.url !== '';
   }
 
-  protected async crawlList(listClass: string, productInfo: (cheerio: CheerioStatic, element: CheerioElement) => { name: string, stock: string, url: string }, affiliate: boolean, logger: Logger) {
+  protected async crawlList(listClass: string, productInfo: (cheerio: CheerioStatic, element: CheerioElement) => { name: string, stock: string, url: string }, affiliate: boolean, config: Configuration, logger: Logger) {
+    this.resetStats();
     const products: Product[] = [];
     for await (const url of this.getUrls()) {
       try {
-        const response = await this.request(url);
+        const response = await this.request(url, config.proxies);
         const $        = cheerio.load(response.data);
         $(listClass).each((i, element) => {
           const {name, stock, url} = productInfo($, element);
@@ -83,21 +94,30 @@ export abstract class Crawler implements CrawlerInterface {
             logger.warning('Skipped product', {product, url});
             return;
           }
+          this.addRequest(
+            response.status === HttpStatus.Ok,
+            url,
+            product,
+            response.status,
+            response.config.responseTime ? response.config.responseTime : 0
+          );
           products.push(product);
           logger.debug(`Acquired stock from ${this.getRetailerName()}`, products[products.length - 1]);
         });
       } catch (e) {
+        this.addRequest(false, url, null, e.response.status, e.response.config.responseTime);
         logger.error(e.message, {url});
       }
     }
     return products;
   }
 
-  protected async crawlSinglePage(productInfo: (cheerio: CheerioStatic) => { name: string, stock: string }, affiliate: boolean, logger: Logger) {
+  protected async crawlSinglePage(productInfo: (cheerio: CheerioStatic) => { name: string, stock: string }, affiliate: boolean, config: Configuration, logger: Logger) {
+    this.resetStats();
     const products: Product[] = [];
     for await (const url of this.getUrls()) {
       try {
-        const response      = await this.request(url);
+        const response      = await this.request(url, config.proxies);
         const $             = cheerio.load(response.data);
         const {name, stock} = productInfo($);
         const product       = this.createProduct(name, stock, url, affiliate);
@@ -105,13 +125,31 @@ export abstract class Crawler implements CrawlerInterface {
           logger.warning('Skipped product', {product, url});
           continue;
         }
+        this.addRequest(
+          response.status === HttpStatus.Ok,
+          url,
+          product,
+          response.status,
+          response.config.responseTime ? response.config.responseTime : 0
+        );
         products.push(product);
         logger.debug(`Acquired stock from ${this.getRetailerName()}`, products[products.length - 1]);
       } catch (e) {
+        this.addRequest(false, url, null, e.response.status, e.response.config.responseTime);
         logger.error(e.message, {url});
       }
     }
     return products;
+  }
+
+  protected addRequest(success: boolean, url: string, product: Product | null, code: HttpStatus, responseTime: number) {
+    this.stats.latestCycleRequests.push({
+      success,
+      url,
+      product,
+      code,
+      responseTime,
+    });
   }
 
   protected createProduct(name: string, stock: string, url: string, affiliate = false): Product {
@@ -125,10 +163,49 @@ export abstract class Crawler implements CrawlerInterface {
     };
   }
 
-  protected request(url: string) {
-    return axios.get(url, {
-      headers: this.getHeaders()
+  protected resetStats() {
+    this.stats = {
+      latestCycleRequests: [],
+    }
+  }
+
+  protected request(url: string, proxies: string[]) {
+    const proxy = this.getRandomProxy(proxies);
+    axios.interceptors.request.use(config => {
+      config.requestStartTime = Date.now();
+      return config;
     });
+    axios.interceptors.response.use(response => {
+      if (!response.config.requestStartTime) {
+        return response;
+      }
+      response.config.responseTime = Date.now() - response.config.requestStartTime;
+      return response;
+    });
+    return axios.get(url, {
+      headers: this.getHeaders(),
+      proxy: {
+        host: proxy.host,
+        port: proxy.port as unknown as number,
+        auth: {
+          username: proxy.auth.username,
+          password: proxy.auth.password
+        }
+      }
+    });
+  }
+
+  private getRandomProxy(proxies: string[]) {
+    const proxy = proxies[Math.floor(Math.random() * proxies.length)];
+    const [host,port,username,password] = proxy.split(':');
+    return {
+      host,
+      port,
+      auth: {
+        username,
+        password
+      }
+    };
   }
 
   private getHeaders() {

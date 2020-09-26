@@ -2,19 +2,25 @@
   "compilerOptions": {
     "target": "ES6",
     "module": "commonjs",
-    "declaration": true,
-    "declarationMap": true,
+    "declaration": false,
+    "declarationMap": false,
     "moduleResolution": "node",
     "esModuleInterop": true,
     "types": [
       "node"
+    ],
+    "typeRoots": [
+      "./typings",
+      "./node_modules/@types"
     ],
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "preserveSymlinks": true
+    "preserveSymlinks": true,
+    "outDir": "build",
+    "sourceMap": false
   },
   "exclude": [
     "**/test/**",

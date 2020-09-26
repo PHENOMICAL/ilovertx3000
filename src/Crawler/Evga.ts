@@ -1,8 +1,13 @@
 import {Logger} from '../Logger';
 import {Crawler} from './Crawler';
 import {Region} from '../Model/Region';
+import {Configuration} from '../Model/Configuration';
 
 export class Evga extends Crawler {
+  constructor(private urls: string[]) {
+    super();
+  }
+
   getRetailerName(): string {
     return 'EVGA Shop';
   }
@@ -12,13 +17,10 @@ export class Evga extends Crawler {
   }
 
   protected getUrls(): string[] {
-    return [
-      'https://www.evga.com/products/productlist.aspx?type=0&family=GeForce+30+Series+Family&chipset=RTX+3080',
-      'https://www.evga.com/products/productlist.aspx?type=0&family=GeForce+30+Series+Family&chipset=RTX+3090'
-    ];
+    return this.urls;
   }
 
-  async acquireStock(logger: Logger) {
+  async acquireStock(config: Configuration, logger: Logger) {
     return await this.crawlList(
       '.list-item',
       ($, element) => ({
@@ -27,6 +29,7 @@ export class Evga extends Crawler {
         url: $(element).find('a').first().attr('href') as string,
       }),
       false,
+      config,
       logger
     );
   }

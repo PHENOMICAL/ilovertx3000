@@ -9,6 +9,9 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+# Configurations
+config.*.ts
+
 # Testing
 coverage
 

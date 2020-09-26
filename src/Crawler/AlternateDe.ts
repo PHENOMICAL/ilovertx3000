@@ -1,8 +1,13 @@
 import {Logger} from '../Logger';
 import {Region} from '../Model/Region';
 import {Crawler} from './Crawler';
+import {Configuration} from '../Model/Configuration';
 
 export class AlternateDe extends Crawler {
+  constructor(private urls: string[]) {
+    super();
+  }
+
   getRetailerName(): string {
     return 'alternate.de';
   }
@@ -12,13 +17,10 @@ export class AlternateDe extends Crawler {
   }
 
   protected getUrls(): string[] {
-    return [
-      'https://www.alternate.de/Grafikkarten/RTX-3080',
-      'https://www.alternate.de/Grafikkarten/RTX-3090'
-    ];
+    return this.urls;
   }
 
-  async acquireStock(logger: Logger) {
+  async acquireStock(config: Configuration, logger: Logger) {
     return await this.crawlList(
       '.listingContainer .listRow',
       ($, element) => ({
@@ -27,6 +29,7 @@ export class AlternateDe extends Crawler {
         url: $(element).find('a').first().attr('href') as string,
       }),
       false,
+      config,
       logger
     );
   }

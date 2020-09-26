@@ -1,6 +1,7 @@
 import {Logger} from '../Logger';
 import {Region} from '../Model/Region';
 import {Nvidia} from './Nvidia';
+import {Configuration} from '../Model/Configuration';
 
 export class NvidiaUs extends Nvidia {
   getRegion(): Region {
@@ -22,7 +23,7 @@ export class NvidiaUs extends Nvidia {
     ];
   }
 
-  async acquireStock(logger: Logger) {
-    return await super.acquireStock(logger);
+  async acquireStock(config: Configuration, logger: Logger) {
+    return await super.acquireStock(config, logger);
   }
 }
