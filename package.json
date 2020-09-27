@@ -1,6 +1,6 @@
 {
   "name": "ilovertx3000",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Stock availability checker bot for RTX 3000 cards",
   "scripts": {
     "start": "node build/index.js",
