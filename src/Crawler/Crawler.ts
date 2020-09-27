@@ -2,7 +2,7 @@ import {CrawlerInterface} from './CrawlerInterface';
 import {Region} from '../Model/Region';
 import {Logger} from '../Logger';
 import {Product} from '../Model/Product';
-import axios from 'axios';
+import axios, {AxiosRequestConfig} from 'axios';
 import cheerio from 'cheerio';
 import {CrawlerStats} from '../Model/CrawlerStats';
 import {HttpStatus} from '../Model/HttpStatus';
@@ -170,7 +170,6 @@ export abstract class Crawler implements CrawlerInterface {
   }
 
   protected request(url: string, proxies: string[]) {
-    const proxy = this.getRandomProxy(proxies);
     axios.interceptors.request.use(config => {
       config.requestStartTime = Date.now();
       return config;
@@ -182,17 +181,21 @@ export abstract class Crawler implements CrawlerInterface {
       response.config.responseTime = Date.now() - response.config.requestStartTime;
       return response;
     });
-    return axios.get(url, {
+    const config: AxiosRequestConfig = {
       headers: this.getHeaders(),
-      proxy: {
+    };
+    if (proxies.length > 0) {
+      const proxy = this.getRandomProxy(proxies);
+      config.proxy = {
         host: proxy.host,
         port: proxy.port as unknown as number,
         auth: {
           username: proxy.auth.username,
           password: proxy.auth.password
         }
-      }
-    });
+      };
+    }
+    return axios.get(url, config);
   }
 
   private getRandomProxy(proxies: string[]) {
