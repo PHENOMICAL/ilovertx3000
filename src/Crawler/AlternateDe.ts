@@ -26,7 +26,7 @@ export class AlternateDe extends Crawler {
       ($, element) => ({
         name: $(element).find('.description .name').text().trim(),
         stock: $(element).find('.stockStatus').text().trim(),
-        url: $(element).find('a').first().attr('href') as string,
+        url: 'https://www.alternate.de/' + $(element).find('a').first().attr('href') as string,
       }),
       false,
       config,
